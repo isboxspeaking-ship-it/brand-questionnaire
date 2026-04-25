@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>品牌视觉信息收集问卷</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --mid: #555;
+    --muted: #999;
+    --dim: #ccc;
+    --border: #e8e8e8;
+    --bg: #fafaf8;
+    --white: #ffffff;
+    --accent: #1a8fe3;
+    --accent-light: #e8f4fd;
+    --success: #4a8c3f;
+    --success-light: #f0f7ee;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Noto Sans SC", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--white);
+    border-bottom: 0.5px solid var(--border);
+    padding: 32px 0 28px;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .header-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .header-title { font-size: 26px; font-weight: 500; color: var(--ink); margin-bottom: 6px; }
+  .header-sub   { font-size: 13px; color: var(--muted); }
+
+  /* ── PROGRESS ── */
+  .progress-wrap { max-width: 600px; margin: 0 auto 36px; padding: 0 24px; }
+  .progress-bar  { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; }
+  .progress-text { font-size: 11px; color: var(--muted); margin-top: 6px; text-align: right; }
+
+  /* ── FORM ── */
+  .form-wrap { max-width: 600px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* ── STEP ── */
+  .step { display: none; animation: fadeIn 0.3s ease; }
+  .step.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    font-size: 12px; font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .step-q    { font-size: 18px; font-weight: 500; color: var(--ink); margin-bottom: 6px; line-height: 1.4; }
+  .step-hint { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+
+  /* ── INPUTS ── */
+  input[type="text"], textarea {
+    width: 100%; padding: 12px 14px;
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px; font-family: "Noto Sans SC", sans-serif;
+    color: var(--ink); background: var(--white);
+    outline: none; resize: vertical;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+  textarea { min-height: 100px; }
+
+  /* ── CHOICE PILLS ── */
+  .choices { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  .choice {
+    padding: 8px 16px; border-radius: 999px;
+    border: 0.5px solid var(--border);
+    font-size: 13px; color: var(--mid);
+    cursor: pointer; background: var(--white);
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .choice:hover { border-color: var(--accent); color: var(--accent); }
+  .choice.selected {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .choice.multi.selected {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .choice-hint { font-size: 11px; color: var(--dim); margin-top: 8px; }
+
+  /* ── UPLOAD ZONE ── */
+  .upload-zone {
+    border: 1px dashed var(--dim);
+    border-radius: 10px;
+    padding: 28px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--white);
+  }
+  .upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-text { font-size: 13px; color: var(--muted); }
+  .upload-sub  { font-size: 11px; color: var(--dim); margin-top: 4px; }
+  #file-input  { display: none; }
+  .file-list   { margin-top: 12px; }
+  .file-item   { font-size: 12px; color: var(--success); padding: 4px 0; }
+
+  /* ── SCALE ── */
+  .scale-wrap { margin: 4px 0; }
+  .scale-row  { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .scale-lbl  { font-size: 12px; color: var(--muted); width: 72px; flex-shrink: 0; }
+  .scale-lbl.r { text-align: right; }
+  .scale-dots { display: flex; gap: 8px; flex: 1; justify-content: center; }
+  .scale-dot  {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 1.5px solid var(--dim);
+    cursor: pointer; transition: all 0.15s;
+    background: var(--white);
+  }
+  .scale-dot:hover { border-color: var(--accent); }
+  .scale-dot.active { background: var(--accent); border-color: var(--accent); }
+
+  /* ── NAV BUTTONS ── */
+  .nav { display: flex; gap: 10px; margin-top: 28px; }
+  .btn {
+    padding: 11px 24px; border-radius: 8px;
+    font-size: 14px; font-family: "Noto Sans SC", sans-serif;
+    cursor: pointer; transition: all 0.15s; border: none;
+  }
+  .btn-primary { background: var(--accent); color: #fff; flex: 1; }
+  .btn-primary:hover { background: #1480d0; }
+  .btn-back { background: var(--white); color: var(--mid); border: 0.5px solid var(--border); }
+  .btn-back:hover { background: var(--bg); }
+
+  /* ── RESULT ── */
+  .result-wrap { display: none; }
+  .result-wrap.show { display: block; animation: fadeIn 0.4s ease; }
+  .result-header { text-align: center; padding: 32px 0 24px; }
+  .result-icon { font-size: 36px; margin-bottom: 12px; }
+  .result-title { font-size: 20px; font-weight: 500; color: var(--ink); margin-bottom: 6px; }
+  .result-sub   { font-size: 13px; color: var(--muted); }
+  .result-box {
+    background: var(--white);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 20px;
+    font-size: 13px; color: var(--mid);
+    line-height: 2;
+    font-family: "DM Mono", monospace;
+    white-space: pre-wrap;
+    max-height: 360px;
+    overflow-y: auto;
+  }
+  .copy-btn {
+    width: 100%; margin-top: 12px; padding: 12px;
+    background: var(--success); color: #fff;
+    border: none; border-radius: 8px;
+    font-size: 14px; cursor: pointer;
+    font-family: "Noto Sans SC", sans-serif;
+    transition: background 0.15s;
+  }
+  .copy-btn:hover { background: #3a7030; }
+  .copy-done { background: var(--muted) !important; }
+
+  .result-note {
+    margin-top: 20px; padding: 16px;
+    background: var(--success-light);
+    border-radius: 8px;
+    font-size: 12px; color: var(--success);
+    line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">品牌视觉工作坊 · Brand Visual Workshop</div>
+  <div class="header-title">品牌信息收集问卷</div>
+  <div class="header-sub">大约需要 5-8 分钟 · 填完即可生成品牌手册</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap" id="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:12%"></div></div>
+  <div class="progress-text" id="progress-text">1 / 8</div>
+</div>
+
+<div class="form-wrap">
+
+  <!-- ── STEP 1：品牌基础 ── -->
+  <div class="step active" id="step-1">
+    <div class="step-num">1</div>
+    <div class="step-q">品牌叫什么名字？做什么的？</div>
+    <div class="step-hint">中文名 + 英文/拼音，以及一两句话说清楚业务方向。</div>
+    <input type="text" id="q1-name" placeholder="品牌名称（中文 + 英文/拼音）" style="margin-bottom:10px">
+    <textarea id="q1-biz" placeholder="业务方向，一两句话就够&#10;例：做宠物生活方式内容和周边产品"></textarea>
+    <div class="nav">
+      <button class="btn btn-primary" onclick="next(1)">下一步 →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 2：用户 ── -->
+  <div class="step" id="step-2">
+    <div class="step-num">2</div>
+    <div class="step-q">你的用户是什么样的人？</div>
+    <div class="step-hint">年龄段、生活状态、和你的品牌有什么关系？越具体越好，脑子里最典型的那个人。</div>
+    <textarea id="q2" placeholder="例：25-35岁，城市白领，把宠物当家人，愿意为品质付费，喜欢分享生活方式内容…"></textarea>
+    <div class="nav">
+      <button class="btn btn-back" onclick="prev(2)">← 上一步</button>
+      <button class="btn btn-primary" onclick="next(2)">下一步 →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 3：气质 ── -->
+  <div class="step" id="step-3">
+    <div class="step-num">3</div>
+    <div class="step-q">你希望品牌给用户什么感觉？</div>
+    <div class="step-hint">可以多选，选完后用自己的话补充也行。</div>
+    <div class="choices" id="q3-choices">
+      <div class="choice multi" onclick="toggleMulti(this)">温暖治愈</div>
+      <div class="choice multi" onclick="toggleMulti(this)">精致克制</div>
+      <div class="choice multi" onclick="toggleMulti(this)">自然有机</div>
+      <div class="choice multi" onclick="toggleMulti(this)">活泼有趣</div>
+      <div class="choice multi" onclick="toggleMulti(this)">专业可信</div>
+      <div class="choice multi" onclick="toggleMulti(this)">文艺小众</div>
+      <div class="choice multi" onclick="toggleMulti(this)">简约现代</div>
+      <div class="choice multi" onclick="toggleMulti(this)">高端轻奢</div>
+    </div>
+    <input type="text" id="q3-extra" placeholder="补充描述（可选）" style="margin-top:12px">
+    <div class="nav">
+      <button class="btn btn-back" onclick="prev(3)">← 上一步</button>
+      <button class="btn btn-primary" onclick="next(3)">下一步 →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 4：名字背后 ── -->
+  <div class="step" id="step-4">
+    <div class="step-num">4</div>
+    <div class="step-q">品牌名字是怎么来的？有什么含义或故事吗？</div>
+    <div class="step-hint">名字往往藏着品牌最真实的底色。哪怕只是觉得"好听"也说说。</div>
+    <textarea id="q4" placeholder="例：'竹'代表有机天然，'小'让它更亲切不端架子…&#10;或者：就是觉得好听，没有特别含义"></textarea>
+    <div class="nav">
+      <button class="btn btn-back" onclick="prev(4)">← 上一步</button>
+      <button class="btn btn-primary" onclick="next(4)">下一步 →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 5：参考感觉 ── -->
+  <div class="step" id="step-5">
+    <div class="step-num">5</div>
+    <div class="step-q">有没有哪个品牌的视觉让你觉得"对，就是这种感觉"？</div>
+    <div class="step-hint">不一定是同行，任何品牌都行——超市货架上的、小红书刷到的、出门看到的。说名字或者描述感觉都可以。</div>
+    <textarea id="q5-like" placeholder="感觉对的参考（写名字或描述氛围）"></textarea>
+    <div style="margin-top:12px">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:8px">有没有你绝对不想变成的样子？</div>
+      <textarea id="q5-dislike" placeholder="不想要的风格或品牌（可选，但很有用）" style="min-height:70px"></textarea>
+    </div>
+    <div class="nav">
+      <button class="btn btn-back" onclick="prev(5)">← 上一步</button>
+      <button class="btn btn-primary" onclick="next(5)">下一步 →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 6：参考图上传 ── -->
+  <div class="step" id="step-6">
+    <div class="step-num">6</div>
+    <div class="step-q">上传你喜欢的视觉参考图</div>
+    <div class="step-hint">截图、品牌图片、包装照片都可以。3-5 张最好，太多反而难聚焦。</div>
+    <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+      <div class="upload-icon">📎</div>
+      <div class="upload-text">点击上传参考图片</div>
+      <div class="upload-sub">JPG / PNG / WEBP · 单张不超过 10MB</div>
+    </div>
+    <input type="file" id="file-input" multiple accept="image/*" onchange="handleFiles(this)">
+    <div class="file-list" id="file-list"></div>
+    <div class="choice-hint">没有参考图也没关系，可以跳过</div>
+    <div class="nav">
+      <button class="btn btn-back" onclick="prev(6)">← 上一步</button>
+      <button class="btn btn-primary" onclick="next(6)">下一步 →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 7：已有元素 ── -->
+  <div class="step" id="step-7">
+    <div class="step-num">7</div>
+    <div class="step-q">现在有没有已有的视觉元素？</div>
+    <div class="step-hint">比如 logo、色彩、字体、已经在用的物料——有就说，没有也没关系。</div>
+    <div class="choices" id="q7-choices" style="margin-bottom:12px">
+      <div class="choice" onclick="toggleSingle(this,'q7')">完全没有，白纸一张</div>
+      <div class="choice" onclick="toggleSingle(this,'q7')">有 logo，没有其他</div>
+      <div class="choice" onclick="toggleSingle(this,'q7')">有一些但很零散</div>
+      <div class="choice" onclick="toggleSingle(this,'q7')">有比较完整的视觉体系</div>
+    </div>
+    <textarea id="q7-detail" placeholder="补充说明，或上传已有素材截图的说明（可选）" style="min-height:70px"></textarea>
+    <div class="nav">
+      <button class="btn btn-back" onclick="prev(7)">← 上一步</button>
+      <button class="btn btn-primary" onclick="next(7)">下一步 →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 8：输出需求 ── -->
+  <div class="step" id="step-8">
+    <div class="step-num">8</div>
+    <div class="step-q">这次最想要什么输出？</div>
+    <div class="step-hint">可以多选，帮我了解优先级。</div>
+    <div class="choices" id="q8-choices">
+      <div class="choice multi" onclick="toggleMulti(this)">品牌手册（调性+色彩+logo规范）</div>
+      <div class="choice multi" onclick="toggleMulti(this)">周边产品设计（帆布袋/笔记本/贴纸等）</div>
+      <div class="choice multi" onclick="toggleMulti(this)">品牌海报</div>
+      <div class="choice multi" onclick="toggleMulti(this)">文件/文档模板</div>
+      <div class="choice multi" onclick="toggleMulti(this)">社群内容物料</div>
+      <div class="choice multi" onclick="toggleMulti(this)">可持续迭代的品牌 Skill</div>
+    </div>
+    <textarea id="q8-extra" placeholder="其他需求或补充说明（可选）" style="margin-top:12px;min-height:60px"></textarea>
+    <div class="nav">
+      <button class="btn btn-back" onclick="prev(8)">← 上一步</button>
+      <button class="btn btn-primary" onclick="submit()">生成结果 ✓</button>
+    </div>
+  </div>
+
+  <!-- ── RESULT ── -->
+  <div class="result-wrap" id="result-wrap">
+    <div class="result-header">
+      <div class="result-icon">✅</div>
+      <div class="result-title">问卷完成！</div>
+      <div class="result-sub">把下面的内容复制，发给 Claude 开始做品牌手册</div>
+    </div>
+    <div class="result-box" id="result-box"></div>
+    <button class="copy-btn" id="copy-btn" onclick="copyResult()">复制全部内容</button>
+    <div class="result-note">
+      📌 使用方式：打开 Claude 对话，直接把复制的内容粘贴发送，Claude 会根据这份信息开始做品牌视觉手册。<br>
+      如果你有参考图片，把图片一起拖入对话框上传。
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let currentStep = 1;
+  const totalSteps = 8;
+
+  function updateProgress() {
+    const pct = (currentStep / totalSteps) * 100;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-text').textContent = currentStep + ' / ' + totalSteps;
+  }
+
+  function next(step) {
+    document.getElementById('step-' + step).classList.remove('active');
+    currentStep = step + 1;
+    if (currentStep <= totalSteps) {
+      document.getElementById('step-' + currentStep).classList.add('active');
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  function prev(step) {
+    document.getElementById('step-' + step).classList.remove('active');
+    currentStep = step - 1;
+    document.getElementById('step-' + currentStep).classList.add('active');
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggleSingle(el, group) {
+    const siblings = document.querySelectorAll('#' + group + '-choices .choice');
+    siblings.forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function toggleMulti(el) {
+    el.classList.toggle('selected');
+  }
+
+  function getSelected(containerId) {
+    const els = document.querySelectorAll('#' + containerId + ' .selected');
+    return Array.from(els).map(e => e.textContent).join('、');
+  }
+
+  function handleFiles(input) {
+    const list = document.getElementById('file-list');
+    list.innerHTML = '';
+    Array.from(input.files).forEach(f => {
+      const div = document.createElement('div');
+      div.className = 'file-item';
+      div.textContent = '✓ ' + f.name;
+      list.appendChild(div);
+    });
+  }
+
+  function submit() {
+    document.getElementById('step-8').classList.remove('active');
+    document.getElementById('progress-wrap').style.display = 'none';
+
+    const name    = document.getElementById('q1-name').value || '（未填写）';
+    const biz     = document.getElementById('q1-biz').value || '（未填写）';
+    const user    = document.getElementById('q2').value || '（未填写）';
+    const vibes   = getSelected('q3-choices') || '（未选择）';
+    const vibeEx  = document.getElementById('q3-extra').value;
+    const story   = document.getElementById('q4').value || '（未填写）';
+    const like    = document.getElementById('q5-like').value || '（未填写）';
+    const dislike = document.getElementById('q5-dislike').value || '（无）';
+    const files   = document.getElementById('file-input').files;
+    const hasFiles= files.length > 0 ? files.length + ' 张参考图（见附件）' : '无';
+    const existing= getSelected('q7-choices') || '（未选择）';
+    const existEx = document.getElementById('q7-detail').value;
+    const outputs = getSelected('q8-choices') || '（未选择）';
+    const outputEx= document.getElementById('q8-extra').value;
+
+    const result = `【品牌视觉信息收集 · 自动生成】
+
+━━ 品牌基础 ━━
+品牌名称：${name}
+业务方向：${biz}
+
+━━ 目标用户 ━━
+${user}
+
+━━ 品牌气质 ━━
+选择：${vibes}${vibeEx ? '\n补充：' + vibeEx : ''}
+
+━━ 品牌名字含义 ━━
+${story}
+
+━━ 视觉参考 ━━
+喜欢的风格：${like}
+不想要的风格：${dislike}
+参考图片：${hasFiles}
+
+━━ 已有视觉元素 ━━
+${existing}${existEx ? '\n补充：' + existEx : ''}
+
+━━ 本次输出需求 ━━
+${outputs}${outputEx ? '\n补充：' + outputEx : ''}
+
+━━━━━━━━━━━━━━━━━━━━━━
+请根据以上信息，帮我完成品牌视觉手册，包含品牌故事、色彩系统、logo系统、调性定位和应用场景规范。输出为可下载的 HTML 文件。`;
+
+    document.getElementById('result-box').textContent = result;
+    document.getElementById('result-wrap').classList.add('show');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function copyResult() {
+    const text = document.getElementById('result-box').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '已复制 ✓';
+      btn.classList.add('copy-done');
+      setTimeout(() => {
+        btn.textContent = '复制全部内容';
+        btn.classList.remove('copy-done');
+      }, 2500);
+    });
+  }
+</script>
+
+</body>
+</html>
